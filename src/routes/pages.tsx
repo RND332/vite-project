@@ -1,8 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { type Column, createTableStore, Table } from "@/components/Table";
-import type { UnpackArray } from "@/utils/types";
-
-export type Pages = Page[];
+import { type Column, Table, useTableData } from "@/components/Table";
 
 export interface Page {
 	id: number;
@@ -14,7 +11,9 @@ export interface Page {
 
 export const Route = createFileRoute("/pages")({
 	loader: async () => {
-		return (await fetch("/data/pages.json").then((res) => res.json())) as Pages;
+		return (await fetch("/data/pages.json").then((res) =>
+			res.json(),
+		)) as Page[];
 	},
 	component: RouteComponent,
 });
@@ -22,7 +21,7 @@ export const Route = createFileRoute("/pages")({
 function RouteComponent() {
 	const data = Route.useLoaderData();
 
-	const columns: Column<UnpackArray<typeof data>>[] = [
+	const columns: Column<Page>[] = [
 		{
 			header: "ID",
 			accessor: (row) => row.id,
@@ -45,10 +44,7 @@ function RouteComponent() {
 		},
 	];
 
-	const table = createTableStore({
-		data,
-		columns,
-	});
+	const store = useTableData<Page>(data);
 
-	return <Table useTableStore={table} />;
+	return <Table dataStore={store} columns={columns} />;
 }

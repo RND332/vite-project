@@ -1,8 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { type Column, createTableStore, Table } from "@/components/Table";
+import { type Column, Table, useTableData } from "@/components/Table";
 import type { UnpackArray } from "@/utils/types";
-
-export type PricePlans = PricePlan[];
 
 export interface PricePlan {
 	id: number;
@@ -16,7 +14,7 @@ export const Route = createFileRoute("/price_plans")({
 	loader: async () => {
 		return (await fetch("/data/price_plans.json").then((res) =>
 			res.json(),
-		)) as PricePlans;
+		)) as PricePlan[];
 	},
 	component: RouteComponent,
 });
@@ -24,22 +22,10 @@ export const Route = createFileRoute("/price_plans")({
 function RouteComponent() {
 	const data = Route.useLoaderData();
 
-	const lowestDate = data.reduce(
-		(min, p) => (p.createdAt < min ? p.createdAt : min),
-		data[0]?.createdAt ?? new Date(),
-	);
-	const highestDate = data.reduce(
-		(max, p) => (p.createdAt > max ? p.createdAt : max),
-		data[0]?.createdAt ?? new Date(),
-	);
-
-	const columns: Column<UnpackArray<typeof data>>[] = [
+	const columns: Column<PricePlan>[] = [
 		{
 			header: "ID",
 			accessor: (row) => row.id,
-			filter: (value) => {
-				return Number(value) > 2;
-			},
 		},
 		{
 			header: "description",
@@ -55,10 +41,7 @@ function RouteComponent() {
 		},
 	];
 
-	const table = createTableStore({
-		data,
-		columns,
-	});
+	const store = useTableData<PricePlan>(data);
 
-	return <Table useTableStore={table} />;
+	return <Table dataStore={store} columns={columns} />;
 }
