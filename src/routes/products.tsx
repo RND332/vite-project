@@ -1,5 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { type Column, createTableStore, Table } from "@/components/Table";
+import { use } from "react";
+import {
+	type Column,
+	type FilterFn,
+	type FilterRenderer,
+	Table,
+	useTableData,
+} from "@/components/Table";
 
 export type Products = Product[];
 
@@ -25,6 +32,40 @@ export const Route = createFileRoute("/products")({
 	component: RouteComponent,
 });
 
+const filters: Record<string, FilterRenderer<unknown, unknown>> = {
+	size: ({
+		column,
+		setFilter,
+	}: {
+		column: string;
+		setFilter: (col: string, fn?: FilterFn<unknown>) => void;
+	}) => {
+		const options = ["S", "M", "L", "XL", "XXL"];
+
+		return (
+			<select
+				defaultValue=""
+				className="border rounded px-2 py-1 text-sm"
+				onChange={(e) => {
+					const val = e.target.value;
+					if (!val) {
+						setFilter(column, undefined); // reset filter
+					} else {
+						setFilter(column, (cell) => cell === val);
+					}
+				}}
+			>
+				<option value="">All</option>
+				{options.map((opt) => (
+					<option key={opt} value={opt}>
+						{opt}
+					</option>
+				))}
+			</select>
+		);
+	},
+};
+
 function RouteComponent() {
 	const data = Route.useLoaderData();
 
@@ -37,6 +78,7 @@ function RouteComponent() {
 			header: "name",
 			accessor: (row) => row.name,
 			filter: "text",
+			edit: true,
 		},
 		{
 			header: "options",
@@ -44,7 +86,8 @@ function RouteComponent() {
 				{
 					header: "size",
 					accessor: (row) => row.options.size,
-					filter: "text",
+					filter: "size",
+					filterProps: { placeholder: "Filter by size" },
 				},
 				{
 					header: "amount",
@@ -65,10 +108,7 @@ function RouteComponent() {
 		},
 	];
 
-	const table = createTableStore({
-		data,
-		columns,
-	});
+	const store = useTableData<Product>(data);
 
-	return <Table useTableStore={table} />;
+	return <Table dataStore={store} columns={columns} customFilters={filters} />;
 }
