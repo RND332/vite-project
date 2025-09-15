@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Table } from "@/components/Table";
+import { type Column, createTableStore, Table } from "@/components/Table";
+import type { UnpackArray } from "@/utils/types";
 
 export type Pages = Page[];
 
@@ -21,36 +22,33 @@ export const Route = createFileRoute("/pages")({
 function RouteComponent() {
 	const data = Route.useLoaderData();
 
-	return (
-		<Table
-			data={data}
-			columns={[
-				{
-					header: "ID",
-					accessor: (row) => row.id,
-					sort: true,
-				},
-				{
-					header: "title",
-					accessor: (row) => row.title,
-					sort: true,
-				},
-				{
-					header: "active",
-					accessor: (row) => row.active,
-					sort: true,
-				},
-				{
-					header: "published",
-					accessor: (row) => row.publishedAt,
-					sort: true,
-				},
-				{
-					header: "updatedAt",
-					accessor: (row) => row.updatedAt,
-					sort: true,
-				},
-			]}
-		/>
-	);
+	const columns: Column<UnpackArray<typeof data>>[] = [
+		{
+			header: "ID",
+			accessor: (row) => row.id,
+		},
+		{
+			header: "title",
+			accessor: (row) => row.title,
+		},
+		{
+			header: "active",
+			accessor: (row) => row.active,
+		},
+		{
+			header: "published",
+			accessor: (row) => row.publishedAt,
+		},
+		{
+			header: "updatedAt",
+			accessor: (row) => row.updatedAt,
+		},
+	];
+
+	const table = createTableStore({
+		data,
+		columns,
+	});
+
+	return <Table useTableStore={table} />;
 }

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Table } from "@/components/Table";
+import { type Column, createTableStore, Table } from "@/components/Table";
 
 export type Products = Product[];
 
@@ -28,46 +28,47 @@ export const Route = createFileRoute("/products")({
 function RouteComponent() {
 	const data = Route.useLoaderData();
 
-	return (
-		<Table
-			data={data}
-			columns={[
+	const columns: Column<Product>[] = [
+		{
+			header: "ID",
+			accessor: (row) => row.id,
+		},
+		{
+			header: "name",
+			accessor: (row) => row.name,
+			filter: "text",
+		},
+		{
+			header: "options",
+			columns: [
 				{
-					header: "ID",
-					accessor: (row) => row.id,
-					sort: true,
+					header: "size",
+					accessor: (row) => row.options.size,
+					filter: "text",
 				},
 				{
-					header: "name",
-					accessor: (row) => row.name,
-					sort: true,
+					header: "amount",
+					accessor: (row) => row.options.amount,
+					filter: "number",
 				},
-				{
-					header: "options",
-					children: [
-						{
-							header: "size",
-							accessor: (row) => row.options.size,
-							sort: true,
-						},
-						{
-							header: "amount",
-							accessor: (row) => row.options.amount,
-							sort: true,
-						},
-					],
-				},
-				{
-					header: "active",
-					accessor: (row) => row.active,
-					sort: true,
-				},
-				{
-					header: "createdAt",
-					accessor: (row) => row.createdAt,
-					sort: true,
-				},
-			]}
-		/>
-	);
+			],
+		},
+		{
+			header: "active",
+			accessor: (row) => row.active,
+			filter: "boolean",
+		},
+		{
+			header: "createdAt",
+			accessor: (row) => row.createdAt,
+			filter: "date",
+		},
+	];
+
+	const table = createTableStore({
+		data,
+		columns,
+	});
+
+	return <Table useTableStore={table} />;
 }

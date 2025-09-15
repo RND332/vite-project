@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Table } from "@/components/Table";
+import { type Column, createTableStore, Table } from "@/components/Table";
+import type { UnpackArray } from "@/utils/types";
 
 export type PricePlans = PricePlan[];
 
@@ -23,38 +24,41 @@ export const Route = createFileRoute("/price_plans")({
 function RouteComponent() {
 	const data = Route.useLoaderData();
 
-	return (
-		<Table
-			data={data}
-			columns={[
-				{
-					header: "ID",
-					accessor: (row) => row.id,
-					sort: true,
-				},
-				{
-					header: "description",
-					accessor: (row) => row.description,
-					sort: true,
-					filter: { type: "string", minLength: 3, maxLength: 100 },
-				},
-				{
-					header: "createdAt",
-					accessor: (row) => row.createdAt,
-					sort: true,
-					filter: (row) => ({
-						type: "date",
-						before: new Date(row.createdAt.toString()),
-						after: new Date(row.createdAt.toString()),
-					}),
-				},
-				{
-					header: "removedAt",
-					accessor: (row) => row.removedAt,
-					sort: true,
-					filter: { type: "date", before: new Date(), after: new Date() },
-				},
-			]}
-		/>
+	const lowestDate = data.reduce(
+		(min, p) => (p.createdAt < min ? p.createdAt : min),
+		data[0]?.createdAt ?? new Date(),
 	);
+	const highestDate = data.reduce(
+		(max, p) => (p.createdAt > max ? p.createdAt : max),
+		data[0]?.createdAt ?? new Date(),
+	);
+
+	const columns: Column<UnpackArray<typeof data>>[] = [
+		{
+			header: "ID",
+			accessor: (row) => row.id,
+			filter: (value) => {
+				return Number(value) > 2;
+			},
+		},
+		{
+			header: "description",
+			accessor: (row) => row.description,
+		},
+		{
+			header: "createdAt",
+			accessor: (row) => row.createdAt,
+		},
+		{
+			header: "removedAt",
+			accessor: (row) => row.removedAt,
+		},
+	];
+
+	const table = createTableStore({
+		data,
+		columns,
+	});
+
+	return <Table useTableStore={table} />;
 }
