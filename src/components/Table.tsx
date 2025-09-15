@@ -3,7 +3,6 @@ import { create } from "zustand";
 import { useShallow } from "zustand/shallow";
 import { Modal } from "./Modal";
 
-// ---------- Types ----------
 type Accessor<T, V> = (row: T) => V;
 
 interface BaseColumn {
@@ -224,7 +223,6 @@ export const useTableData = <T,>(data: T[]) =>
 		setData: (data: T[]) => set({ data }),
 	}));
 
-// ---------- Filter Registry ----------
 export type FilterRenderer<V, P = void> = (args: {
 	column: string;
 	setFilter: (col: string, fn?: FilterFn<V>) => void;
@@ -409,7 +407,6 @@ export function Table<T extends { id: string | number }>({
 	);
 }
 
-// ---------- Helpers ----------
 const flattenColumns = <T,>(cols: Column<T>[]): LeafColumn<T, unknown>[] =>
 	cols.flatMap((c) => (isLeaf(c) ? [c] : flattenColumns(c.columns)));
 
